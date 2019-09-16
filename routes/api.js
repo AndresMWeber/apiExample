@@ -16,18 +16,31 @@ router.get('/', (req, res, next) => {
 router.get('/poke/:pokeId', (req, res, next) => {
     Pokemon.findOne({ pokeId: Number(req.params.pokeId) + 1 })
         .then(pokeFromDb => {
-            axios.get(`https://pokeapi.co/api/v2/pokemon/${Number(req.params.pokeId) + 1}`)
-                .then(responseFromAPI => {
-                    console.log("><>><<<><><><><><> ", responseFromAPI.data);
-                    data = {
-                        pokes: responseFromAPI.data,
-                        isSaur: responseFromAPI.data.name.includes('saur')
-                    };
-
-                    res.render('apiViews/apiDetails', data);
-                }).catch(err => next(err));
-        }).catch(err => next(err));
-
+            if (pokeFromDb) {
+                res.render('apiViews/apiDetails', {
+                    pokes: pokeFromDb,
+                    isSaur: pokeFromDb.name.includes('saur')
+                })
+            } else {
+                axios.get(`https://pokeapi.co/api/v2/pokemon/${Number(req.params.pokeId) + 1}`)
+                    .then(responseFromAPI => {
+                        Pokemon.create({
+                                pokeId: responseFromAPI.data.id,
+                                name: responseFromAPI.data.name,
+                                front_default: responseFromAPI.data.sprites.front_default,
+                                back_default: responseFromAPI.data.sprites.back_default,
+                                front_shiny: responseFromAPI.data.sprites.front_shiny,
+                                back_shiny: responseFromAPI.data.sprites.back_shiny,
+                            })
+                            .then(newPokeinDb => {
+                                res.render('apiViews/apiDetails', {
+                                    pokes: newPokeinDb,
+                                    isSaur: newPokeinDb.name.includes('saur')
+                                })
+                            }).catch(err => next(err))
+                    }).catch(err => next(err))
+            }
+        }).catch(err => next(err))
 });
 
 module.exports = router;

@@ -6,8 +6,10 @@ const Schema = mongoose.Schema;
 const pokemonSchema = new Schema({
     pokeId: String,
     name: String,
-    frontSpriteImage: String,
-    backSpriteImage: String,
+    front_default: String,
+    back_default: String,
+    front_shiny: String,
+    back_shiny: String,
 }, {
     timestamps: true
 });
